@@ -10,7 +10,7 @@ const Home = () => {
         <div className="text-center py-16">
           <h1 className="text-4xl font-bold mb-4">Welcome to CapeControl</h1>
           <p className="text-xl text-gray-600 mb-8">
-            AI-driven solutions with a freemium model
+            AI-driven solutions with a freemium models
           </p>
           <div className="space-x-4">
             <a

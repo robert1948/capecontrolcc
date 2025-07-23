@@ -1,4 +1,4 @@
-# CapeControl MVP
+# CapeControl MVP 
 
 [![Deploy to Heroku](https://github.com/robert1948/capecontrolcc/actions/workflows/deploy.yml/badge.svg)](https://github.com/robert1948/capecontrolcc/actions/workflows/deploy.yml)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Heroku-purple)](https://capecontrolcc-c2f665014c47.herokuapp.com/)

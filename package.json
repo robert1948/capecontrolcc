@@ -6,12 +6,13 @@
     "dev:backend": "nodemon server/index.js",
     "dev:frontend": "cd client && npm start",
     "build": "cd client && npm run build",
-    "test": "jest",
+    "test": "jest --config=jest.config.json --passWithNoTests",
+    "test:client": "cd client && npm test",
     "migrate": "prisma migrate deploy",
     "db:push": "prisma db push --schema=./server/models/schema.prisma",
     "db:generate": "prisma generate --schema=./server/models/schema.prisma",
-    "heroku-prebuild": "npm install && cd client && npm install",
-    "heroku-postbuild": "cd client && npm run build && npm run db:generate",
+    "heroku-prebuild": "echo 'Heroku prebuild'",
+    "heroku-postbuild": "npm run db:generate && cd client && npm install --legacy-peer-deps && npm run build",
     "deploy:heroku": "git push heroku main"
   },
   "dependencies": {

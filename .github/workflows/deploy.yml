@@ -33,11 +33,13 @@ jobs:
         node-version: '18'
         cache: 'npm'
     
-    - name: Install dependencies
+    - name: Install root dependencies
       run: npm ci
     
     - name: Install client dependencies
-      run: cd client && npm ci
+      run: |
+        cd client
+        npm ci --legacy-peer-deps
     
     - name: Set up test environment
       run: |
@@ -45,6 +47,7 @@ jobs:
         echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> .env
         echo "JWT_SECRET=test_jwt_secret" >> .env
         echo "STRIPE_SECRET_KEY=sk_test_dummy" >> .env
+        echo "NODE_ENV=test" >> .env
     
     - name: Generate Prisma client
       run: npx prisma generate --schema=./server/models/schema.prisma
@@ -72,11 +75,10 @@ jobs:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: "capecontrolcc"
         heroku_email: "robert1948@example.com"
-        usedocker: true
-        docker_build_args: |
-          NODE_ENV
+        usedocker: false
+        buildpack: "heroku/nodejs"
         healthcheck: "https://capecontrolcc.herokuapp.com/health"
-        delay: 5
+        delay: 30
         rollbackonhealthcheckfailed: true
 
   database-migrate:
@@ -85,14 +87,8 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - uses: actions/checkout@v4
-    
     - name: Run Heroku database migrations
       run: |
-        echo "Installing Heroku CLI"
         curl https://cli-assets.heroku.com/install.sh | sh
-        echo "Logging into Heroku"
         echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
-        echo "Running database migrations"
-        heroku run npx prisma db push --schema=./server/models/schema.prisma --app capecontrolcc
-        heroku run npx prisma generate --schema=./server/models/schema.prisma --app capecontrolcc
+        heroku run "npx prisma generate --schema=./server/models/schema.prisma && npx prisma db push --schema=./server/models/schema.prisma" --app capecontrolcc

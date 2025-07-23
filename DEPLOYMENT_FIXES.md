@@ -1,3 +1,21 @@
+## 🚨 CURRENT DEPLOYMENT ISSUE (July 23, 2025)
+
+**Problem**: GitHub Actions deployment failing with "heroku: not found" error
+**Root Cause**: GitHub Secrets are not configured for Heroku deployment
+**Status**: ❌ Requires manual setup
+
+### ⚡ IMMEDIATE FIX REQUIRED:
+1. **Get Heroku API Key**: `heroku auth:token`
+2. **Add GitHub Secrets**: 
+   - Go to https://github.com/robert1948/capecontrolcc/settings/secrets/actions
+   - Add `HEROKU_API_KEY` and `HEROKU_EMAIL`
+3. **Create Heroku App**: `heroku create capecontrolcc`
+4. **Re-run Workflow**: Push new commit or re-run failed action
+
+📋 **Detailed Instructions**: See `GITHUB_SECRETS_SETUP.md`
+
+---
+
 # 🔧 Deployment Error Fixes - Summary
 
 ## Issues Identified and Fixed

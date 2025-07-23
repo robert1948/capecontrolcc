@@ -69,12 +69,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Check if secrets are configured
+      run: |
+        if [ -z "${{ secrets.HEROKU_API_KEY }}" ]; then
+          echo "❌ HEROKU_API_KEY secret is not configured"
+          echo "Please add HEROKU_API_KEY to GitHub repository secrets"
+          echo "Get your API key with: heroku auth:token"
+          exit 1
+        fi
+        echo "✅ Heroku secrets are configured"
+    
     - name: Deploy to Heroku
       uses: akhileshns/heroku-deploy@v3.13.15
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: "capecontrolcc"
-        heroku_email: "robert1948@example.com"
+        heroku_email: ${{secrets.HEROKU_EMAIL}}
         usedocker: false
         buildpack: "heroku/nodejs"
         healthcheck: "https://capecontrolcc.herokuapp.com/health"
@@ -87,8 +97,17 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - name: Run Heroku database migrations
+    - name: Install Heroku CLI and run migrations
       run: |
+        echo "Installing Heroku CLI..."
         curl https://cli-assets.heroku.com/install.sh | sh
+        export PATH="/usr/local/bin:/usr/local/heroku/bin:$PATH"
+        
+        echo "Authenticating with Heroku..."
         echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
-        heroku run "npx prisma generate --schema=./server/models/schema.prisma && npx prisma db push --schema=./server/models/schema.prisma" --app capecontrolcc
+        
+        echo "Running database migrations..."
+        heroku run "npx prisma generate --schema=./server/models/schema.prisma" --app capecontrolcc
+        heroku run "npx prisma db push --schema=./server/models/schema.prisma" --app capecontrolcc
+        
+        echo "✅ Database migrations completed"

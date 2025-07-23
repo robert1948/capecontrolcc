@@ -87,27 +87,6 @@ jobs:
         heroku_email: ${{secrets.HEROKU_EMAIL}}
         usedocker: false
         buildpack: "heroku/nodejs"
-        healthcheck: "https://capecontrolcc.herokuapp.com/health"
+        healthcheck: "https://capecontrolcc-c2f665014c47.herokuapp.com/health"
         delay: 30
         rollbackonhealthcheckfailed: true
-
-  database-migrate:
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-    - name: Install Heroku CLI and run migrations
-      run: |
-        echo "Installing Heroku CLI..."
-        curl https://cli-assets.heroku.com/install.sh | sh
-        export PATH="/usr/local/bin:/usr/local/heroku/bin:$PATH"
-        
-        echo "Authenticating with Heroku..."
-        echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
-        
-        echo "Running database migrations..."
-        heroku run "npx prisma generate --schema=./server/models/schema.prisma" --app capecontrolcc
-        heroku run "npx prisma db push --schema=./server/models/schema.prisma" --app capecontrolcc
-        
-        echo "✅ Database migrations completed"

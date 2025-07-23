@@ -1,0 +1,25 @@
+{
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "NPM_CONFIG_PRODUCTION": "false"
+  },
+  "scripts": {
+    "postdeploy": "npx prisma generate --schema=./server/models/schema.prisma && npx prisma db push --schema=./server/models/schema.prisma"
+  }
+}

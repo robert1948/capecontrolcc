@@ -1,0 +1,98 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install client dependencies
+      run: cd client && npm ci
+    
+    - name: Set up test environment
+      run: |
+        cp env.example .env
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> .env
+        echo "JWT_SECRET=test_jwt_secret" >> .env
+        echo "STRIPE_SECRET_KEY=sk_test_dummy" >> .env
+    
+    - name: Generate Prisma client
+      run: npx prisma generate --schema=./server/models/schema.prisma
+    
+    - name: Run database migrations
+      run: npx prisma db push --schema=./server/models/schema.prisma
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Build client
+      run: cd client && npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Heroku
+      uses: akhileshns/heroku-deploy@v3.13.15
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: "capecontrolcc"
+        heroku_email: "robert1948@example.com"
+        usedocker: true
+        docker_build_args: |
+          NODE_ENV
+        healthcheck: "https://capecontrolcc.herokuapp.com/health"
+        delay: 5
+        rollbackonhealthcheckfailed: true
+
+  database-migrate:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Heroku database migrations
+      run: |
+        echo "Installing Heroku CLI"
+        curl https://cli-assets.heroku.com/install.sh | sh
+        echo "Logging into Heroku"
+        echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
+        echo "Running database migrations"
+        heroku run npx prisma db push --schema=./server/models/schema.prisma --app capecontrolcc
+        heroku run npx prisma generate --schema=./server/models/schema.prisma --app capecontrolcc

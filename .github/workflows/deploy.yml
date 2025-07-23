@@ -85,6 +85,7 @@ jobs:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: "capecontrolcc"
         heroku_email: ${{secrets.HEROKU_EMAIL}}
+        dontautocreate: true
         healthcheck: "https://capecontrolcc-c2f665014c47.herokuapp.com/health"
         checkstring: "OK"
         delay: 30

@@ -2,7 +2,7 @@
   "name": "capecontrol-mvp",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "NODE_ENV=production node server/index.js",
     "dev:backend": "nodemon server/index.js",
     "dev:frontend": "cd client && npm start",
     "build": "cd client && npm run build",
@@ -11,7 +11,7 @@
     "migrate": "prisma migrate deploy",
     "db:push": "prisma db push --schema=./server/models/schema.prisma",
     "db:generate": "prisma generate --schema=./server/models/schema.prisma",
-    "heroku-prebuild": "echo 'Heroku prebuild'",
+    "heroku-prebuild": "echo 'Heroku prebuild starting'",
     "heroku-postbuild": "npm run db:generate && cd client && npm install --legacy-peer-deps && npm run build",
     "deploy:heroku": "git push heroku main"
   },
